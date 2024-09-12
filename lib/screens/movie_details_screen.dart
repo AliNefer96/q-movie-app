@@ -13,9 +13,11 @@ class MovieDetailScreen extends StatefulWidget {
   final int movieId;
   final List<String> genreNames;
 
-  const MovieDetailScreen({super.key, required this.movieId, required this.genreNames});
+  const MovieDetailScreen(
+      {super.key, required this.movieId, required this.genreNames});
 
   @override
+  // ignore: library_private_types_in_public_api
   _MovieDetailScreenState createState() => _MovieDetailScreenState();
 }
 
@@ -26,17 +28,48 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
   @override
   void initState() {
     super.initState();
-    final bearerToken = Provider.of<AuthProvider>(context, listen: false).bearerToken;
-    _apiService = ApiService(bearer: bearerToken);
-    _movieFuture = _apiService.fetchMovieDetails(widget.movieId);
+    _initializeMovieFuture();
+  }
+
+  void _initializeMovieFuture() {
+    final movieProvider = Provider.of<MovieProvider>(context, listen: false);
+    if (movieProvider.isOffline) {
+      _movieFuture = _getCachedMovieDetails(movieProvider);
+    } else {
+      final bearerToken =
+          Provider.of<AuthProvider>(context, listen: false).bearerToken;
+      _apiService = ApiService(bearer: bearerToken);
+      _movieFuture =
+          _apiService.fetchMovieDetails(widget.movieId).then((movie) {
+        movieProvider.cacheMovieDetails(movie);
+        return movie;
+      }).catchError((error) {
+        // ignore: invalid_return_type_for_catch_error
+        return Future.error(error);
+      });
+    }
+  }
+
+  Future<Movie> _getCachedMovieDetails(MovieProvider movieProvider) async {
+    final cachedMovie =
+        await movieProvider.getCachedMovieDetails(widget.movieId);
+    if (cachedMovie != null) {
+      return Future.value(cachedMovie);
+    } else {
+      return Future.error('Movie details not available offline');
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Consumer<MovieProvider>(
       builder: (context, movieProvider, child) {
+        if (_movieFuture == null) {
+          return Center(child: Text('Loading...'));
+        }
         return Scaffold(
-          backgroundColor: Theme.of(context).primaryColor,
+          backgroundColor:
+              Theme.of(context).primaryColor, 
           body: Stack(
             children: [
               FutureBuilder<Movie>(
@@ -65,12 +98,23 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
                                     width: double.infinity,
                                     height: 400,
                                     fit: BoxFit.cover,
+                                    errorBuilder: (context, error, stackTrace) {
+                                      return Container(
+                                        width: double.infinity,
+                                        height: 400,
+                                        color: Colors.grey,
+                                        child: const Center(
+                                            child: Text('Image not available')),
+                                      );
+                                    },
                                   )
                                 : Container(
                                     height: 400,
                                     color: Colors.grey,
-                                    child: const Center(child: Text('No Image')),
+                                    child:
+                                        const Center(child: Text('No Image')),
                                   ),
+                           
                             Positioned(
                               top: 28,
                               left: 20,
@@ -90,7 +134,7 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
                         ),
                         Container(
                           transform: Matrix4.translationValues(0, -40, 0),
-                          padding: const EdgeInsets.all(16.0),
+                          padding: const EdgeInsets.fromLTRB(24, 16, 8, 0),
                           decoration: BoxDecoration(
                             color: Theme.of(context).primaryColor,
                             borderRadius: const BorderRadius.vertical(
@@ -101,7 +145,8 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
                                 children: [
                                   Expanded(
                                     child: SizedBox(
@@ -133,7 +178,7 @@ class _MovieDetailScreenState extends State<MovieDetailScreen> {
                                   ),
                                 ],
                               ),
-                              const SizedBox(height: 8),
+                              const SizedBox(height: 2),
                               Rating(rating: movie.rating),
                               const SizedBox(height: 16),
                               GenreChip(genreNames: widget.genreNames),

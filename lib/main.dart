@@ -17,10 +17,12 @@ void main() {
           create: (_) => AuthProvider(bearer),
         ),
         ChangeNotifierProvider<MovieProvider>(
-          create: (context) => MovieProvider(apiService: ApiService(
+          create: (context) => MovieProvider(
+            apiService: ApiService(
               bearer:
                   Provider.of<AuthProvider>(context, listen: false).bearerToken,
-            ),),
+            ),
+          ),
         ),
         ChangeNotifierProvider<MovieProvider>(
           create: (context) => MovieProvider(

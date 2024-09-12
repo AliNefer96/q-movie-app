@@ -146,7 +146,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
                     return MovieCard(
                       title: movie.title,
-                      imageUrl: 'https://image.tmdb.org/t/p/w200${movie.posterPath}',
+                      imageUrl: provider.isOffline
+                          ? ""
+                          : 'https://image.tmdb.org/t/p/w200${movie.posterPath}',
                       rating: movie.rating,
                       genres: genreNames,
                       onTap: () {
@@ -230,13 +232,16 @@ class _HomeScreenState extends State<HomeScreen> {
             assetPath,
             width: 24,
             height: 24,
-            color: isSelected ? const Color(0xFFEC9B3E) : const Color(0xFFE4ECEF),
+            color:
+                isSelected ? const Color(0xFFEC9B3E) : const Color(0xFFE4ECEF),
           ),
           const SizedBox(width: 8),
           Text(
             label,
             style: TextStyle(
-              color: isSelected ? const Color(0xFFEC9B3E) : const Color(0xFFE4ECEF),
+              color: isSelected
+                  ? const Color(0xFFEC9B3E)
+                  : const Color(0xFFE4ECEF),
               fontSize: 12,
             ),
           ),

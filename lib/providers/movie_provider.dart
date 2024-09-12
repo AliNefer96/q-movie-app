@@ -120,4 +120,12 @@ class MovieProvider with ChangeNotifier {
     }
     notifyListeners();
   }
+  Future<Movie?> getCachedMovieDetails(int movieId) async {
+  return await dbHelper.getMovieDetails(movieId);
+}
+
+Future<void> cacheMovieDetails(Movie movie) async {
+  await dbHelper.insertMovie(movie);
+}
+
 }

@@ -12,7 +12,8 @@ class MovieCard extends StatelessWidget {
   final bool isFavourite;
   final VoidCallback onFavouriteToggle;
 
-  const MovieCard({super.key, 
+  const MovieCard({
+    super.key,
     required this.title,
     required this.imageUrl,
     required this.rating,
@@ -23,7 +24,7 @@ class MovieCard extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {   
+  Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
       child: Card(
@@ -32,11 +33,12 @@ class MovieCard extends StatelessWidget {
         child: Stack(
           children: [
             Padding(
-              padding: const EdgeInsets.fromLTRB(16, 8, 8, 8),
+              padding: const EdgeInsets.fromLTRB(16, 8, 24, 8),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       imageUrl.isNotEmpty
                           ? ClipRect(
@@ -54,7 +56,7 @@ class MovieCard extends StatelessWidget {
                             )
                           : Container(
                               width: 100, height: 100, color: Colors.grey),
-                     const SizedBox(width: 8), 
+                      const SizedBox(width: 16),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,

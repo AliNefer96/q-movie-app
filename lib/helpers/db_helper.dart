@@ -137,4 +137,43 @@ class DatabaseHelper {
     final db = await database;
     await db.delete('movies');
   }
+  Future<Movie?> getMovieDetails(int movieId) async {
+  final db = await database;
+  final List<Map<String, dynamic>> maps = await db.query(
+    'movies',
+    where: 'id = ?',
+    whereArgs: [movieId],
+  );
+  
+  if (maps.isNotEmpty) {
+    return Movie(
+      id: maps.first['id'],
+      title: maps.first['title'],
+      overview: maps.first['overview'],
+      posterPath: maps.first['posterPath'],
+      releaseDate: maps.first['releaseDate'],
+      rating: maps.first['rating'],
+      genreIds: List<int>.from(jsonDecode(maps.first['genreIds'])),
+    );
+  }
+  return null; 
+}
+
+
+Future<void> insertMovie(Movie movie) async {
+  final db = await database;
+  await db.insert(
+    'movies',
+    {
+      'id': movie.id,
+      'title': movie.title,
+      'overview': movie.overview,
+      'posterPath': movie.posterPath,
+      'rating': movie.rating,
+      'genreIds': jsonEncode(movie.genreIds),
+      'releaseDate': movie.releaseDate,
+    },
+    conflictAlgorithm: ConflictAlgorithm.replace,
+  );
+}
 }
